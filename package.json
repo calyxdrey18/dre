@@ -1,7 +1,7 @@
 {
-  "name": "chathub-pro",
+  "name": "calyx-drey-chathub",
   "version": "1.0.0",
-  "description": "Advanced chat application with video calling",
+  "description": "Calyx-Drey Chathub - Advanced chat application with video calling",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

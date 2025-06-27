@@ -1,814 +1,1234 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatHub Pro</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* Updated Color Scheme */
-    :root {
-      --primary: #6C63FF;
-      --primary-dark: #564fc9;
-      --secondary: #FF6584;
-      --dark: #2A2D3E;
-      --light: #F8F9FF;
-      --self-msg: #6C63FF;
-      --other-msg: #F0F2FF;
-      --card-bg: rgba(255, 255, 255, 0.97);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      overflow: hidden;
-    }
-
-    /* Auth Overlay */
-    .auth-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(42, 45, 62, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      backdrop-filter: blur(10px);
-      animation: fadeIn 0.5s ease;
-    }
-
-    .auth-box {
-      background: var(--card-bg);
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-      width: 100%;
-      max-width: 450px;
-      text-align: center;
-      transform: translateY(0);
-      transition: transform 0.4s ease, opacity 0.4s ease;
-    }
-
-    .auth-box.hidden {
-      transform: translateY(20px);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .auth-box h2 {
-      margin-bottom: 25px;
-      color: var(--primary);
-      font-size: 2rem;
-      background: linear-gradient(45deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .auth-box input {
-      width: 100%;
-      padding: 15px 25px;
-      margin: 12px 0;
-      border: 2px solid #e6e6ff;
-      border-radius: 15px;
-      font-size: 1.1rem;
-      outline: none;
-      transition: all 0.3s ease;
-      background: rgba(240, 242, 255, 0.6);
-    }
-
-    .auth-box input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.25);
-      background: white;
-    }
-
-    .auth-box button {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
-      color: white;
-      border: none;
-      border-radius: 15px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
-    }
-
-    .auth-box button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
-    }
-
-    .auth-box .switch {
-      margin-top: 20px;
-      color: #666;
-      font-size: 1rem;
-    }
-
-    .auth-box .switch a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-      position: relative;
-    }
-
-    .auth-box .switch a:after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--primary);
-      transform: scaleX(0);
-      transform-origin: right;
-      transition: transform 0.3s ease;
-    }
-
-    .auth-box .switch a:hover:after {
-      transform: scaleX(1);
-      transform-origin: left;
-    }
-
-    /* Profile Picture Upload */
-    .profile-upload {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 20px;
-      cursor: pointer;
-    }
-
-    .profile-preview {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid var(--primary);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .profile-upload:hover .profile-preview {
-      transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
-    }
-
-    .upload-icon {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      background: var(--primary);
-      color: white;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Chat Container */
-    .chat-container {
-      width: 100%;
-      max-width: 1200px;
-      height: 90vh;
-      background: var(--card-bg);
-      border-radius: 20px;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-      display: flex;
-      overflow: hidden;
-      animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .sidebar {
-      width: 300px;
-      background: var(--dark);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.3s ease;
-    }
-
-    .user-profile {
-      padding: 25px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .profile-pic {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--primary);
-      margin: 0 auto 15px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .profile-pic:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
-    }
-
-    .username {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-top: 10px;
-    }
-
-    .online-users {
-      flex-grow: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .online-users h3 {
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 1.2rem;
-    }
-
-    .user-item {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 12px 15px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .user-item:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateX(5px);
-    }
-
-    .user-item img {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--primary);
-    }
-
-    /* Chat Main Area */
-    .chat-main {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%236C63FF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-    }
-
-    .chat-header {
-      background: white;
-      padding: 18px 25px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .current-chat {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .current-chat img {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--primary);
-      transition: all 0.3s ease;
-    }
-
-    .current-chat img:hover {
-      transform: scale(1.1);
-    }
-
-    .chat-actions button {
-      background: transparent;
-      border: none;
-      color: var(--primary);
-      font-size: 1.3rem;
-      cursor: pointer;
-      margin-left: 12px;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .chat-actions button:hover {
-      background: rgba(108, 99, 255, 0.1);
-      transform: translateY(-3px);
-    }
-
-    /* Chat Window - Enhanced Scrolling */
-    .chat-window {
-      flex-grow: 1;
-      padding: 25px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      scroll-behavior: smooth;
-    }
-
-    /* Scrollbar Styling */
-    .chat-window::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .chat-window::-webkit-scrollbar-track {
-      background: rgba(240, 242, 255, 0.5);
-      border-radius: 4px;
-    }
-
-    .chat-window::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 4px;
-    }
-
-    .message {
-      max-width: 75%;
-      padding: 15px 20px;
-      border-radius: 20px;
-      position: relative;
-      word-wrap: break-word;
-      line-height: 1.5;
-      display: flex;
-      align-items: flex-start;
-      gap: 15px;
-      opacity: 0;
-      animation: messageAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      transform-origin: bottom;
-    }
-
-    @keyframes messageAppear {
-      0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.9);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .message.self {
-      background: var(--self-msg);
-      color: white;
-      align-self: flex-end;
-      border-bottom-right-radius: 8px;
-      animation-delay: 0.1s;
-    }
-
-    .message.other {
-      background: var(--other-msg);
-      color: var(--dark);
-      align-self: flex-start;
-      border-bottom-left-radius: 8px;
-      animation-delay: 0.1s;
-    }
-
-    .message img.profile-pic {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-      border: 2px solid white;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .message-content {
-      flex-grow: 1;
-    }
-
-    .message-username {
-      font-weight: 700;
-      margin-bottom: 5px;
-      font-size: 0.95rem;
-    }
-
-    .message-text {
-      font-size: 1.05rem;
-      line-height: 1.4;
-    }
-
-    .message-timestamp {
-      font-size: 0.75rem;
-      opacity: 0.8;
-      margin-top: 8px;
-      display: block;
-      text-align: right;
-    }
-
-    .file-message {
-      display: block;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      margin-top: 8px;
-    }
-
-    .file-link {
-      color: white;
-      text-decoration: none;
-      word-break: break-all;
-      display: inline-block;
-      margin-top: 8px;
-      padding: 8px 15px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .file-link:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .image-message {
-      max-width: 100%;
-      max-height: 300px;
-      border-radius: 12px;
-      margin-top: 8px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
-    .image-message:hover {
-      transform: scale(1.02);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Chat Controls */
-    .chat-controls {
-      display: flex;
-      padding: 18px;
-      background: white;
-      border-top: 1px solid #eee;
-      align-items: center;
-    }
-
-    .file-btn {
-      background: var(--light);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      margin-right: 15px;
-      color: var(--primary);
-      font-size: 1.3rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .file-btn:hover {
-      background: var(--primary);
-      color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
-    }
-
-    #file-input {
-      display: none;
-    }
-
-    #message-input {
-      flex-grow: 1;
-      padding: 16px 25px;
-      border-radius: 30px;
-      border: 2px solid #e6e6ff;
-      outline: none;
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-      background: rgba(240, 242, 255, 0.8);
-    }
-
-    #message-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.2);
-      background: white;
-    }
-
-    button.send-btn {
-      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
-      border: none;
-      color: white;
-      padding: 15px 30px;
-      margin-left: 15px;
-      border-radius: 30px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
-    }
-
-    button.send-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
-    }
-
-    /* Video Chat */
-    .video-chat-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(42, 45, 62, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      backdrop-filter: blur(10px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease;
-    }
-
-    .video-chat-container.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .video-box {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 30px;
-      width: 90%;
-      max-width: 900px;
-      text-align: center;
-      transform: scale(0.9);
-      opacity: 0;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .video-chat-container.active .video-box {
-      transform: scale(1);
-      opacity: 1;
-    }
-
-    .video-box h2 {
-      margin-bottom: 25px;
-      color: var(--primary);
-      font-size: 2rem;
-    }
-
-    .video-container {
-      display: flex;
-      gap: 30px;
-      margin: 25px 0;
-    }
-
-    .video-box video {
-      width: 100%;
-      background: #333;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      transform: scale(0.95);
-      transition: all 0.3s ease;
-    }
-
-    .video-box video:hover {
-      transform: scale(0.97);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    .video-controls {
-      margin-top: 25px;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-    }
-
-    .video-controls button {
-      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
-    }
-
-    .video-controls button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
-    }
-
-    .video-controls button#stop-video-btn {
-      background: linear-gradient(45deg, #FF6584, #e05570);
-    }
-
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    /* Typing Indicator */
-    .typing-indicator {
-      background: var(--other-msg);
-      color: #666;
-      padding: 12px 20px;
-      border-radius: 20px;
-      align-self: flex-start;
-      font-size: 0.95rem;
-      display: none;
-      width: fit-content;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
-    }
-
-    /* System Message */
-    .system-message {
-      align-self: center;
-      background: transparent;
-      color: #777;
-      font-style: italic;
-      font-size: 0.95rem;
-      text-align: center;
-      padding: 10px 20px;
-      border-radius: 20px;
-      animation: fadeIn 0.5s ease;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .chat-container {
-        flex-direction: column;
-        height: 95vh;
-      }
-      
-      .sidebar {
-        width: 100%;
-        height: auto;
-      }
-      
-      .online-users {
-        max-height: 150px;
-      }
-      
-      .auth-box {
-        padding: 30px 20px;
-      }
-      
-      .video-container {
-        flex-direction: column;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calyx-Drey ChatHub - Advanced Live Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #564fc9;
+            --secondary: #FF6584;
+            --dark: #2A2D3E;
+            --light: #F8F9FF;
+            --self-msg: #6C63FF;
+            --other-msg: #F0F2FF;
+            --card-bg: rgba(255, 255, 255, 0.97);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Auth Overlay */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(42, 45, 62, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .auth-box h2 {
+            margin-bottom: 25px;
+            color: var(--primary);
+            font-size: 2rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 15px 25px;
+            margin: 12px 0;
+            border: 2px solid #e6e6ff;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(240, 242, 255, 0.6);
+        }
+
+        .auth-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.25);
+            background: white;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .auth-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .auth-box .switch {
+            margin-top: 20px;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .auth-box .switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .auth-box .switch a:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+
+        .auth-box .switch a:hover:after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* Profile Picture Upload */
+        .profile-upload {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+
+        .profile-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .profile-upload:hover .profile-preview {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+        }
+
+        .upload-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--primary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            display: flex;
+            overflow: hidden;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .user-profile {
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-pic {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            margin: 0 auto 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+        }
+
+        .username {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .online-users {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .online-users h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .user-item img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        /* Chat Main Area */
+        .chat-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.极 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%236C63FF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .chat-header {
+            background: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-chat {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .current-chat img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .current-chat img:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-actions button {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            margin-left: 12px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chat-actions button:hover {
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* Chat Window - Enhanced Scrolling */
+        .chat-window {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar Styling */
+        .chat-window::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-window::-webkit-scrollbar-track {
+            background: rgba(240, 242, 255, 0.5);
+            border-radius: 4极;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+            line-height: 1.5;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            opacity: 0;
+            animation: messageAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform-origin: bottom;
+        }
+
+        @keyframes messageAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .message.self {
+            background: var(--self-msg);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 8px;
+            animation-delay: 0.1s;
+        }
+
+        .message.other {
+            background: var(--other-msg);
+            color: var(--dark);
+            align-self: flex-start;
+            border-bottom-left-radius: 8px;
+            animation-delay: 0.1s;
+        }
+
+        .message img.profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-content {
+            flex-grow: 1;
+        }
+
+        .message-username {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .message-text {
+            font-size: 1.05rem;
+            line-height: 1.4;
+        }
+
+        .message-timestamp {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            display: block;
+            text-align: right;
+        }
+
+        .file-message {
+            display: block;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .file-link {
+            color: white;
+            text-decoration: none;
+            word-break: break-all;
+            display: inline-block;
+            margin-top: 8px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .file-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .image-message {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-message:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Chat Controls */
+        .chat-controls {
+            display: flex;
+            padding: 18px;
+            background: white;
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+
+        .file-btn {
+            background: var(--light);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 15px;
+            color: var(--primary);
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 16px 25px;
+            border-radius: 30px;
+            border: 2px solid #e6e6ff;
+            outline: none;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: rgba(240, 242, 255, 0.8);
+        }
+
+        #message-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.2);
+            background: white;
+        }
+
+        button.send-btn {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            margin-left: 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        button.send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        /* Video Chat */
+        .video-chat-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(42, 45, 62, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .video-chat-container.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .video-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 900px;
+            text-align: center;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .video-chat-container.active .video-box {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .video-box h2 {
+            margin-bottom: 25px;
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .video-container {
+            display: flex;
+            gap: 30px;
+            margin: 25px 0;
+        }
+
+        .video-box video {
+            width: 100%;
+            background: #333;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+
+        .video-box video:hover {
+            transform: scale(0.97);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .video-controls button {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .video-controls button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .video-controls button#stop-video-btn {
+            background: linear-gradient(45deg, #FF6584, #e05570);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            background: var(--other-msg);
+            color: #666;
+            padding: 12px 20px;
+            border-radius: 20px;
+            align-self: flex-start;
+            font-size: 0.95rem;
+            display: none;
+            width: fit-content;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* System Message */
+        .system-message {
+            align-self: center;
+            background: transparent;
+            color: #777;
+            font-style: italic;
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 10px 20px;
+            border-radius: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+                height: 95vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .online-users {
+                max-height: 150px;
+            }
+            
+            .auth-box {
+                padding: 30px 20px;
+            }
+            
+            .video-container {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Auth Overlay -->
-  <div id="auth-overlay" class="auth-overlay">
-    <div class="auth-box" id="auth-box">
-      <h2>Welcome to ChatHub</h2>
-      <div id="login-form">
-        <div class="profile-upload">
-          <img id="login-profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="Profile">
-          <div class="upload-icon">
-            <i class="fas fa-camera"></i>
-          </div>
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-box" id="auth-box">
+            <h2>Welcome to Calyx-Drey ChatHub</h2>
+            <div id="login-form">
+                <div class="profile-upload">
+                    <img id="login-profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="Profile">
+                    <div class="upload-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button id="login-btn">Login</button>
+                <p class="switch">Don't have an account? <a href="#" id="show-register">Register</a></p>
+            </div>
+            
+            <div id="register-form" class="hidden">
+                <div class="profile-upload">
+                    <img id="register-profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="Profile">
+                    <div class="upload-icon">
+                        <i class="fas fa-camera"></极>
+                    </div>
+                </div>
+                <input type="text" id="register-username" placeholder="Choose a username" required>
+                <input type="password" id="register-password" placeholder="Create password" required>
+                <button id="register-btn">Create Account</button>
+                <p class="switch">Already have an account? <a href="#" id="show-login">Login</a></p>
+            </div>
         </div>
-        <input type="text" id="login-username" placeholder="Username" required>
-        <input type="password" id="login-password" placeholder="Password" required>
-        <button id="login-btn">Login</button>
-        <p class="switch">Don't have an account? <a href="#" id="show-register">Register</a></p>
-      </div>
-      
-      <div id="register-form" class="hidden">
-        <div class="profile-upload">
-          <img id="register-profile-preview" class="profile-preview" src="https://via.placeholder.com/120" alt="Profile">
-          <div class="upload-icon">
-            <i class="fas fa-camera"></i>
-          </div>
-        </div>
-        <input type="text" id="register-username" placeholder="Choose a username" required>
-        <input type="password" id="register-password" placeholder="Create password" required>
-        <button id="register-btn">Create Account</button>
-        <p class="switch">Already have an account? <a href="#" id="show-login">Login</a></p>
-      </div>
     </div>
-  </div>
-  
-  <!-- Chat Section -->
-  <div id="chat-container" class="chat-container hidden">
-    <!-- ... (same as before) ... -->
-  </div>
-  
-  <!-- Video Chat Modal -->
-  <div class="video-chat-container" id="video-chat-container">
-    <!-- ... (same as before) ... -->
-  </div>
+    
+    <!-- Chat Section -->
+    <div id="chat-container" class="chat-container hidden">
+        <div class="sidebar">
+            <div class="user-profile">
+                <img id="user-profile-pic" class="profile-pic" src="https://via.placeholder.com/80" alt="Profile">
+                <div class="username" id="user-username">Username</div>
+            </div>
+            
+            <div class="online-users">
+                <h3><i class="fas fa-users"></i> Online Users</h3>
+                <div id="users-list">
+                    <!-- Users will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-main">
+            <div class="chat-header">
+                <div class="current-chat">
+                    <img id="active-user-pic" src="https://via.placeholder.com/40" alt="User">
+                    <div id="active-username">Global Chat</div>
+                </div>
+                <div class="chat-actions">
+                    <button id="video-call-btn" title="Start Video Call"><i class="fas fa-video"></i></button>
+                </div>
+            </div>
+            
+            <div id="chat-window" class="chat-window">
+                <!-- Messages will appear here -->
+            </div>
+            
+            <div class="chat-controls">
+                <div class="file-btn" id="file-btn" title="Attach file">
+                    <i class="fas fa-paperclip"></i>
+                </div>
+                <input type="file" id="file-input">
+                <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+                <button type="button" class="send-btn" id="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Video Chat Modal -->
+    <div class="video-chat-container" id="video-chat-container">
+        <div class="video-box">
+            <h2>Video Chat</h2>
+            <div class="video-container">
+                <div>
+                    <h3>Your Camera</h3>
+                    <video id="local-video" autoplay muted playsinline></video>
+                </div>
+                <div>
+                    <h3>Partner's Camera</h3>
+                    <video id="remote-video" autoplay playsinline></video>
+                </div>
+            </div>
+            <div class="video-controls">
+                <button id="start-video-btn"><i class="fas fa-play"></i> Start</button>
+                <button id="stop-video-btn"><i class="fas fa-stop"></i> Stop</button>
+                <button id="close-video-btn"><i class="fas fa-times"></i> Close</button>
+            </div>
+        </div>
+    </div>
 
-  <script>
-    // ... (same as before) ... 
-    // Only changes are in the scroll behavior and animations
+    <script>
+        // DOM Elements
+        const authOverlay = document.getElementById('auth-overlay');
+        const chatContainer = document.getElementById('chat-container');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+        const userProfilePic = document.getElementById('user-profile-pic');
+        const userUsername = document.getElementById('user-username');
+        const usersList = document.getElementById('users-list');
+        const chatWindow = document.getElementById('chat-window');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const fileBtn = document.getElementById('file-btn');
+        const fileInput = document.getElementById('file-input');
+        const videoCallBtn = document.getElementById('video-call-btn');
+        const videoChatContainer = document.getElementById('video-chat-container');
+        const localVideo = document.getElementById('local-video');
+        const remoteVideo = document.getElementById('remote-video');
+        const startVideoBtn = document.getElementById('start-video-btn');
+        const stopVideoBtn = document.getElementById('stop-video-btn');
+        const closeVideoBtn = document.getElementById('close-video-btn');
 
-    // Add message to chat window
-    function addMessage(message, sender, file, fileName, username, profilePic) {
-      const messageElem = document.createElement('div');
-      messageElem.classList.add('message', sender);
-      
-      // ... (same content as before) ...
-      
-      chatWindow.appendChild(messageElem);
-      
-      // Scroll to bottom with smooth behavior
-      chatWindow.scrollTo({
-        top: chatWindow.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-    
-    // Initialize
-    checkLoggedIn();
-    
-    // Profile picture preview for login
-    document.getElementById('login-profile-preview').addEventListener('click', function() {
-      alert("Profile picture can be changed after login in settings");
-    });
-    
-    // Profile picture preview for register
-    const registerProfileInput = document.createElement('input');
-    registerProfileInput.type = 'file';
-    registerProfileInput.accept = 'image/*';
-    registerProfileInput.style.display = 'none';
-    document.body.appendChild(registerProfileInput);
-    
-    document.getElementById('register-profile-preview').addEventListener('click', function() {
-      registerProfileInput.click();
-    });
-    
-    registerProfileInput.addEventListener('change', function() {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('register-profile-preview').src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  </script>
+        // State variables
+        let currentUser = null;
+        let socket = null;
+        let peerConnection = null;
+        let localStream = null;
+        let dataChannel = null;
+
+        // Toggle auth forms
+        showRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+
+        // Login function
+        loginBtn.addEventListener('click', () => {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('chatUsers') || '{}');
+            
+            if (users[username] && users[username].password === password) {
+                currentUser = {
+                    username,
+                    profilePic: users[username].profilePic || 'https://via.placeholder.com/80'
+                };
+                
+                // Save current user to localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update UI
+                userProfilePic.src = currentUser.profilePic;
+                userUsername.textContent = currentUser.username;
+                authOverlay.classList.add('hidden');
+                chatContainer.classList.remove('hidden');
+                
+                // Connect to WebSocket
+                connectWebSocket();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        // Register function
+        registerBtn.addEventListener('click', () => {
+            const username = document.getElementById('register-username').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            const profilePicInput = document.getElementById('profile-pic');
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('chatUsers') || '{}');
+            
+            if (users[username]) {
+                alert('Username already taken');
+                return;
+            }
+            
+            let profilePic = 'https://via.placeholder.com/80';
+            const file = profilePicInput.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePic = e.target.result;
+                    saveUser(username, password, profilePic);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                saveUser(username, password, profilePic);
+            }
+        });
+
+        function saveUser(username, password, profilePic) {
+            const users = JSON.parse(localStorage.getItem('chatUsers') || '{}');
+            users[username] = {
+                password,
+                profilePic
+            };
+            localStorage.setItem('chatUsers', JSON.stringify(users));
+            
+            alert('Account created successfully! Please login.');
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        }
+
+        // Check if user is already logged in
+        function checkLoggedIn() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (user) {
+                currentUser = user;
+                userProfilePic.src = currentUser.profilePic;
+                userUsername.textContent = currentUser.username;
+                authOverlay.classList.add('hidden');
+                chatContainer.classList.remove('hidden');
+                connectWebSocket();
+            }
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            // For demo purposes, we'll simulate WebSocket connection
+            // In a real app, this would connect to your server
+            console.log('Simulating WebSocket connection...');
+            
+            // Simulate receiving a message
+            setTimeout(() => {
+                addSystemMessage('Connected to chat server');
+            }, 1000);
+            
+            // Simulate receiving a list of users
+            setTimeout(() => {
+                updateOnlineUsers([
+                    { username: 'Alex', profilePic: 'https://i.pravatar.cc/80?img=1' },
+                    { username: 'Taylor', profilePic: 'https://i.pravatar.cc/80?img=2' },
+                    { username: 'Jordan', profilePic: 'https://i.pravatar.cc/80?img=3' }
+                ]);
+            }, 1500);
+            
+            // Simulate receiving a message
+            setTimeout(() => {
+                addMessage('Hello there! Welcome to ChatHub!', 'other', null, null, 'Alex', 'https://i.pravatar.cc/80?img=1');
+            }, 2000);
+        }
+
+        // Update online users list
+        function updateOnlineUsers(users) {
+            usersList.innerHTML = '';
+            users.forEach(user => {
+                if (user.username === currentUser.username) return;
+                
+                const userItem = document.createElement('div');
+                userItem.classList.add('user-item');
+                userItem.innerHTML = `
+                    <img src="${user.profilePic}" alt="${user.username}">
+                    <div>${user.username}</div>
+                `;
+                
+                userItem.addEventListener('click', () => {
+                    document.getElementById('active-username').textContent = user.username;
+                    document.getElementById('active-user-pic').src = user.profilePic;
+                });
+                
+                usersList.appendChild(userItem);
+            });
+        }
+
+        // Send message
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === '') return;
+
+            addMessage(message, 'self', null, null, currentUser.username, currentUser.profilePic);
+            
+            // In a real app, this would send via WebSocket
+            console.log('Sending message:', message);
+            
+            // Simulate receiving a response
+            setTimeout(() => {
+                addMessage('Thanks for your message! This is a demo response.', 'other', null, null, 'Alex', 'https://i.pravatar.cc/80?img=1');
+            }, 1000);
+
+            messageInput.value = '';
+            messageInput.focus();
+        }
+
+        // File sharing
+        fileBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // In a real app, this would send via WebSocket
+                    console.log('Sending file:', file.name);
+                    
+                    // Display locally
+                    addMessage('', 'self', e.target.result, file.name, currentUser.username, currentUser.profilePic);
+                };
+                
+                reader.readAsDataURL(file);
+                fileInput.value = ''; // Reset input
+            }
+        });
+
+        // Add message to chat window
+        function addMessage(message, sender, file, fileName, username, profilePic) {
+            const messageElem = document.createElement('div');
+            messageElem.classList.add('message', sender);
+            
+            // Add profile picture
+            const picElem = document.createElement('img');
+            picElem.src = profilePic;
+            picElem.classList.add('profile-pic');
+            messageElem.appendChild(picElem);
+            
+            // Message content container
+            const contentElem = document.createElement('div');
+            contentElem.classList.add('message-content');
+            
+            // Sender username
+            if (sender === 'other') {
+                const usernameElem = document.createElement('div');
+                usernameElem.classList.add('message-username');
+                usernameElem.textContent = username;
+                usernameElem.style.fontWeight = 'bold';
+                usernameElem.style.marginBottom = '5px';
+                contentElem.appendChild(usernameElem);
+            }
+            
+            // Text message
+            if (message) {
+                const textElem = document.createElement('div');
+                textElem.textContent = message;
+                textElem.classList.add('message-text');
+                contentElem.appendChild(textElem);
+            }
+            
+            // File message
+            if (file) {
+                const fileElem = document.createElement('div');
+                fileElem.classList.add('file-message');
+                
+                if (file.startsWith('data:image')) {
+                    const img = document.createElement('img');
+                    img.src = file;
+                    img.classList.add('image-message');
+                    fileElem.appendChild(img);
+                } else {
+                    fileElem.textContent = `Sent a file: ${fileName}`;
+                    const link = document.createElement('a');
+                    link.href = file;
+                    link.download = fileName;
+                    link.textContent = 'Download';
+                    link.classList.add('file-link');
+                    fileElem.appendChild(link);
+                }
+                
+                contentElem.appendChild(fileElem);
+            }
+            
+            // Timestamp
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeElem = document.createElement('span');
+            timeElem.classList.add('message-timestamp');
+            timeElem.textContent = timestamp;
+            contentElem.appendChild(timeElem);
+            
+            messageElem.appendChild(contentElem);
+            chatWindow.appendChild(messageElem);
+            
+            // Scroll to bottom with smooth behavior
+            chatWindow.scrollTo({
+                top: chatWindow.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Add system message
+        function addSystemMessage(message) {
+            const sysMsg = document.createElement('div');
+            sysMsg.classList.add('system-message');
+            sysMsg.textContent = message;
+            
+            chatWindow.appendChild(sysMsg);
+            
+            // Scroll to bottom with smooth behavior
+            chatWindow.scrollTo({
+                top: chatWindow.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Video chat functions
+        videoCallBtn.addEventListener('click', () => {
+            videoChatContainer.classList.add('active');
+        });
+
+        closeVideoBtn.addEventListener('click', () => {
+            videoChatContainer.classList.remove('active');
+            stopVideoChat();
+        });
+
+        startVideoBtn.addEventListener('click', startVideoChat);
+        stopVideoBtn.addEventListener('click', stopVideoChat);
+
+        async function startVideoChat() {
+            try {
+                // Get local media stream
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                localVideo.srcObject = localStream;
+                
+                // Create peer connection
+                const configuration = { 
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] 
+                };
+                peerConnection = new RTCPeerConnection(configuration);
+                
+                // Add local stream to connection
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+                
+                // Set up data channel for text chat
+                dataChannel = peerConnection.createDataChannel('chat');
+                dataChannel.onmessage = handleDataChannelMessage;
+                
+                // Listen for ICE candidates
+                peerConnection.onicecandidate = event => {
+                    if (event.candidate) {
+                        console.log('Sending ICE candidate');
+                    }
+                };
+                
+                // Listen for remote stream
+                peerConnection.ontrack = event => {
+                    remoteVideo.srcObject = event.streams[0];
+                };
+                
+                // Create and send offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                console.log('Sending offer to start video chat');
+                
+            } catch (error) {
+                console.error('Error starting video chat:', error);
+                alert('Error accessing camera/microphone. Please check permissions.');
+            }
+        }
+
+        function stopVideoChat() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            localVideo.srcObject = null;
+            remoteVideo.srcObject = null;
+        }
+
+        function handleDataChannelMessage(event) {
+            addMessage(event.data, 'other', null, null, 'Video Chat', '');
+        }
+
+        // Initialize
+        checkLoggedIn();
+        
+        // Profile picture preview for register
+        const registerProfileInput = document.createElement('input');
+        registerProfileInput.type = 'file';
+        registerProfileInput.accept = 'image/*';
+        registerProfileInput.style.display = 'none';
+        document.body.appendChild(registerProfileInput);
+        
+        document.getElementById('register-profile-preview').addEventListener('click', function() {
+            registerProfileInput.click();
+        });
+        
+        registerProfileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('register-profile-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 </html>
